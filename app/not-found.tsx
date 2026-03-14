@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Home, AlertCircle, ChevronLeft } from 'lucide-react';
 
+export const dynamic = 'force-static';
+
 export default function NotFound() {
   return (
     <div className="bg-lavender-glow min-h-screen flex items-center justify-center font-inter selection:bg-blue selection:text-white p-6">
