@@ -120,6 +120,7 @@ export default function YouTubePage() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className="w-full pl-16 pr-6 py-6 rounded-2xl bg-zinc-50 border border-zinc-100 focus:bg-white focus:border-blue transition-all font-inter font-bold text-navy placeholder:text-navy/40 outline-none"
+              suppressHydrationWarning
             />
           </div>
           <button

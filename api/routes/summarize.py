@@ -14,10 +14,14 @@ def summarize_notes():
         return jsonify({"error": "Content is required"}), 400
 
     try:
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+            return jsonify({"error": "OPENROUTER_API_KEY is missing in backend environment variables"}), 500
+
         # Initialize OpenRouter client (OpenAI compatible)
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=os.getenv("OPENROUTER_API_KEY"),
+            api_key=api_key,
         )
 
         response = client.chat.completions.create(

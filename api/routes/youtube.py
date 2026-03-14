@@ -27,87 +27,60 @@ def youtube_summary():
         return jsonify({"error": "Invalid YouTube URL"}), 400
 
     try:
-        # Path to cookies file (expected in backend/ folder)
-        backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        cookies_path = os.path.join(backend_dir, 'cookies.txt')
-        
-        # Prepare session
-        session = requests.Session()
-        session.headers.update({"Accept-Language": "en-US"})
-        
-        if os.path.exists(cookies_path):
-            print(f"Using cookies from {cookies_path}")
-            try:
-                cj = MozillaCookieJar(cookies_path)
-                cj.load(ignore_discard=True, ignore_expires=True)
-                session.cookies = cj
-            except Exception as e:
-                print(f"Failed to load cookies: {e}")
-
-        # Fetch transcript with improved logic
+        # Fetch transcript using youtube-transcript-api (latest versions don't use cookies properly anymore)
         try:
-            # First attempt: standard static call (works in most versions)
             try:
-                transcript_data = YouTubeTranscriptApi.get_transcript(video_id, languages=['en', 'en-GB'], cookies=cookies_path if os.path.exists(cookies_path) else None)
+                # New instanced API in v0.6.3+
+                api = YouTubeTranscriptApi()
+                transcript_list = api.list(video_id)
+                
+                try:
+                    transcript = transcript_list.find_manually_created_transcript(['en'])
+                except:
+                    try:
+                        transcript = transcript_list.find_generated_transcript(['en'])
+                    except:
+                        transcript = next(iter(transcript_list))
+                
+                data_list = transcript.fetch()
                 transcript_text = " ".join([
                     item['text'] if isinstance(item, dict) else getattr(item, 'text', '') 
-                    for item in transcript_data
+                    for item in data_list
                 ])
-                print(f"Successfully fetched transcript using get_transcript for {video_id}")
-            except Exception as e1:
-                print(f"Standard get_transcript failed: {e1}")
-                # Second attempt: manual list approach (instanced)
-                try:
-                    # Some versions/proxies require instanced API with session
-                    api = YouTubeTranscriptApi()
-                    transcript_list = api.list(video_id) # Fixed method name
-                    
-                    # Try manual English, then generated English, then first available
-                    try:
-                        transcript = transcript_list.find_manually_created_transcript(['en'])
-                    except:
-                        try:
-                            transcript = transcript_list.find_generated_transcript(['en'])
-                        except:
-                            transcript = next(iter(transcript_list))
-                    
-                    data_list = transcript.fetch()
-                    # Handle both dict and object representations
-                    transcript_text = " ".join([
-                        item['text'] if isinstance(item, dict) else getattr(item, 'text', '') 
-                        for item in data_list
-                    ])
-                    print(f"Successfully fetched transcript using list for {video_id}")
-                except Exception as e2:
-                    print(f"Instanced list approach failed: {e2}")
-                    raise Exception(f"Failed to retrieve transcript: {str(e2)}")
+                print(f"Successfully fetched transcript using v0.6.3+ API for {video_id}")
+            except Exception as e:
+                print(f"Fallback to proxy due to local API failure: {str(e)}")
+                proxy_url = f"https://youtubetranscript.com/?server_vid={video_id}"
+                proxy_res = requests.get(proxy_url, timeout=15)
+                
+                if proxy_res.status_code == 200 and '<?xml' in proxy_res.text:
+                    import xml.etree.ElementTree as ET
+                    root = ET.fromstring(proxy_res.text)
+                    transcript_text = " ".join([t.text for t in root.findall('text') if t.text])
+                    if not transcript_text:
+                        raise Exception("Empty transcript from proxy")
+                    print(f"Successfully fetched transcript using proxy for {video_id}")
+                else:
+                    raise Exception("Proxy returned invalid or empty response")
 
         except Exception as transcript_err:
-            error_str = str(transcript_err).lower()
-            print(f"Transcript fetch failed for {video_id}: {error_str}")
-            
-            if "no element found" in error_str or "could not retrieve" in error_str or "blocked" in error_str:
-                msg = ("YouTube is returning an empty response for this transcript. "
-                       "This usually means the request is being blocked. ")
-                if not os.path.exists(cookies_path):
-                    msg += "To fix this, please provide a 'cookies.txt' file in the backend folder."
-                else:
-                    msg += "Your 'cookies.txt' might be invalid or expired."
-                
-                return jsonify({"error": msg}), 500
-            
-            return jsonify({"error": f"YouTube Transcript Error: {str(transcript_err)}"}), 500
+            print(f"Transcript fetch completely failed for {video_id}: {str(transcript_err)}")
+            return jsonify({"error": "Failed to retrieve transcript. The video might be private, have no subtitles, or YouTube bot protection is active."}), 500
 
         # Limit transcript length for the LLM
 
-        # Limit transcript length for the LLM (OpenRouter auto handles large context usually, but good to be safe)
-        if len(transcript_text) > 15000:
-            transcript_text = transcript_text[:15000] + "..."
+        # Limit transcript length for the LLM (8,000 chars is plenty for a crisp summary)
+        if len(transcript_text) > 8000:
+            transcript_text = transcript_text[:8000] + "..."
 
         # Initialize OpenRouter client
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+            return jsonify({"error": "OPENROUTER_API_KEY is missing in backend environment variables"}), 500
+
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=os.getenv("OPENROUTER_API_KEY"),
+            api_key=api_key,
         )
 
         response = client.chat.completions.create(

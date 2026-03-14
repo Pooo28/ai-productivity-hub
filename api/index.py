@@ -7,6 +7,10 @@ from routes.youtube import youtube_bp
 from routes.jobs import jobs_bp
 from routes.schedule import schedule_bp
 
+# Load .env from the project root (parent of api/)
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(root_dir, '.env'))
+# Also load from current directory just in case
 load_dotenv()
 
 app = Flask(__name__)

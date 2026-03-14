@@ -75,9 +75,13 @@ def job_search():
             context += f"Job {i+1}:\nTitle: {title}\nURL: {url}\nContent: {content}\n---\n"
 
         # Initialize OpenRouter client
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+             return jsonify({"error": "OPENROUTER_API_KEY is missing in backend environment variables"}), 500
+
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=os.getenv("OPENROUTER_API_KEY"),
+            api_key=api_key,
         )
 
         # Get user skills if provided (optional for now, can be added later)
@@ -140,9 +144,13 @@ def draft_cover_letter():
         return jsonify({"error": "Job details are required"}), 400
 
     try:
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+             return jsonify({"error": "OPENROUTER_API_KEY is missing in backend environment variables"}), 500
+
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=os.getenv("OPENROUTER_API_KEY"),
+            api_key=api_key,
         )
 
         response = client.chat.completions.create(

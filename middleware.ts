@@ -8,25 +8,40 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  // Return early if env vars are missing to avoid MIDDLEWARE_INVOCATION_FAILED
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Middleware: Supabase environment variables are missing!')
+    return response
+  }
+
+  let supabase;
+  try {
+    supabase = createServerClient(
+      supabaseUrl,
+      supabaseKey,
+      {
+        cookies: {
+          get(name: string) {
+            return request.cookies.get(name)?.value
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            request.cookies.set({ name, value, ...options })
+            response.cookies.set({ name, value, ...options })
+          },
+          remove(name: string, options: CookieOptions) {
+            request.cookies.set({ name, value: '', ...options })
+            response.cookies.set({ name, value: '', ...options })
+          },
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options })
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options })
-          response.cookies.set({ name, value: '', ...options })
-        },
-      },
-    }
-  )
+      }
+    )
+  } catch (e) {
+    console.error('Middleware: Failed to initialize Supabase client', e)
+    return response
+  }
 
   // Skip Supabase check for internal Next.js paths and static assets
   const isInternalPath = request.nextUrl.pathname.startsWith('/_next') || 
