@@ -27,9 +27,11 @@ def job_search():
         print(f"DEBUG: FULL SEARCH RESULT: {search_result}")
         print(f"DEBUG: Search result type: {type(search_result)}")
 
-        # Handle SDK return type (object or dict)
+        # Handle SDK return type (object, dict, or list)
         job_data = []
-        if isinstance(search_result, dict):
+        if isinstance(search_result, list):
+            job_data = search_result
+        elif isinstance(search_result, dict):
             # If it's a dict, it might be the raw response with 'data' or already parsed
             data_field = search_result.get('data', {})
             if isinstance(data_field, dict):
@@ -63,8 +65,9 @@ def job_search():
         context = ""
         for i, job in enumerate(job_data[:5]): # Take top 5
             if isinstance(job, dict):
-                title = job.get('title') or job.get('name') or 'Job'
-                url = job.get('url') or job.get('link') or '#'
+                metadata = job.get('metadata', {})
+                title = job.get('title') or job.get('name') or metadata.get('title') or 'Job'
+                url = job.get('url') or job.get('link') or metadata.get('sourceURL') or '#'
                 content = (job.get('markdown') or job.get('description') or job.get('snippet') or job.get('content') or '')[:1000]
             else:
                 title = getattr(job, 'title', None) or getattr(job, 'name', 'Job')
@@ -88,42 +91,69 @@ def job_search():
         user_skills = data.get('skills', 'Not provided')
 
         print(f"DEBUG: Requesting structured AI job data for {len(job_data)} jobs")
-        response = client.chat.completions.create(
-            model="openrouter/free",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a professional career consultant. Analyze the provided job search results and return a JSON object. "
-                        "The JSON should contain a key 'jobs' which is an array of objects. "
-                        "Each job object MUST have: 'company', 'role' (specific job title), 'location', 'salary_estimate', 'type' (e.g. Remote, Full-time), "
-                        f"'requirements' (list of strings), 'link', and 'fit_analysis' (a brief explanation of why this job matches the user's skills: {user_skills}). "
-                        "Return ONLY valid JSON."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": f"Role: {role}\nLocation: {location}\nUser Skills: {user_skills}\n\nSearch Results:\n{context}"
-                }
-            ],
-            response_format={ "type": "json_object" }
-        )
-
-        import json
-        raw_content = response.choices[0].message.content
         try:
-            # Clean up potential markdown formatting if not strictly JSON
-            if "```json" in raw_content:
-                raw_content = raw_content.split("```json")[1].split("```")[0].strip()
-            elif "```" in raw_content:
-                raw_content = raw_content.split("```")[1].split("```")[0].strip()
-            
-            structured_data = json.loads(raw_content)
-            jobs_list = structured_data.get('jobs', [])
-            summary = f"Found {len(jobs_list)} matching roles for your profile."
-        except Exception as json_err:
-            print(f"JSON Parse Error: {json_err}. Raw content: {raw_content}")
-            return jsonify({"error": "Failed to parse AI job data"}), 500
+            response = client.chat.completions.create(
+                model="openrouter/free",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional career consultant. Analyze the provided job search results and return a JSON object. "
+                            "The JSON should contain a key 'jobs' which is an array of objects. "
+                            "Each job object MUST have: 'company', 'role' (specific job title), 'location', 'salary_estimate', 'type' (e.g. Remote, Full-time), "
+                            f"'requirements' (list of strings), 'link', and 'fit_analysis' (a brief explanation of why this job matches the user's skills: {user_skills}). "
+                            "Return ONLY valid JSON."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Role: {role}\nLocation: {location}\nUser Skills: {user_skills}\n\nSearch Results:\n{context}"
+                    }
+                ],
+                response_format={ "type": "json_object" }
+            )
+
+            import json
+            raw_content = response.choices[0].message.content
+            try:
+                # Clean up potential markdown formatting if not strictly JSON
+                if "```json" in raw_content:
+                    raw_content = raw_content.split("```json")[1].split("```")[0].strip()
+                elif "```" in raw_content:
+                    raw_content = raw_content.split("```")[1].split("```")[0].strip()
+                
+                structured_data = json.loads(raw_content)
+                jobs_list = structured_data.get('jobs', [])
+                summary = f"Found {len(jobs_list)} matching roles for your profile."
+            except Exception as json_err:
+                print(f"JSON Parse Error: {json_err}. Raw content: {raw_content}")
+                raise Exception("Failed to parse AI job data")
+                
+        except Exception as ai_err:
+            print(f"AI API Error (Rate Limit/Parse): {str(ai_err)}. Falling back to raw Firecrawl extraction.")
+            jobs_list = []
+            for item in job_data[:5]:
+                if isinstance(item, dict):
+                    meta = item.get('metadata', {})
+                    title = item.get('title') or item.get('name') or meta.get('title') or 'Job'
+                    url = item.get('url') or item.get('link') or meta.get('sourceURL') or '#'
+                    company = meta.get('company', title.split('-')[0].strip() if '-' in title else 'Company')
+                else:
+                    title = getattr(item, 'title', None) or getattr(item, 'name', 'Job')
+                    url = getattr(item, 'url', None) or getattr(item, 'link', '#')
+                    company = title.split('-')[0].strip() if '-' in title else 'Company'
+                
+                jobs_list.append({
+                    "company": company,
+                    "role": title[:80] + "..." if len(title) > 80 else title,
+                    "location": location,
+                    "salary_estimate": "N/A",
+                    "type": "N/A",
+                    "requirements": [],
+                    "link": url,
+                    "fit_analysis": "AI rate limit reached. Raw result provided directly from search engine."
+                })
+            summary = f"Found {len(jobs_list)} matching roles (bypassed AI sorting due to API daily limits)."
 
         return jsonify({
             "summary": summary,
