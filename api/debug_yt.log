@@ -1,0 +1,48 @@
+Python version: 3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]
+Library module location: C:\Users\chandan\AppData\Local\Programs\Python\Python314\Lib\site-packages\youtube_transcript_api\__init__.py
+Class attributes:
+  - __class__
+  - __delattr__
+  - __dict__
+  - __dir__
+  - __doc__
+  - __eq__
+  - __firstlineno__
+  - __format__
+  - __ge__
+  - __getattribute__
+  - __getstate__
+  - __gt__
+  - __hash__
+  - __init__
+  - __init_subclass__
+  - __le__
+  - __lt__
+  - __module__
+  - __ne__
+  - __new__
+  - __reduce__
+  - __reduce_ex__
+  - __repr__
+  - __setattr__
+  - __sizeof__
+  - __static_attributes__
+  - __str__
+  - __subclasshook__
+  - __weakref__
+  - fetch
+  - list
+
+Checking pip list for youtube-transcript-api...
+Name: youtube-transcript-api
+Version: 1.2.4
+Summary: This is a python API which allows you to get the transcripts/subtitles for a given YouTube video. It also works for automatically generated subtitles, supports translating subtitles and it does not require a headless browser, like other selenium based solutions do!
+Home-page: https://github.com/jdepoix/youtube-transcript-api
+Author: Jonas Depoix
+Author-email: jonas.depoix@web.de
+License: MIT
+Location: C:\Users\chandan\AppData\Local\Programs\Python\Python314\Lib\site-packages
+Requires: defusedxml, requests
+Required-by: 
+
+get_transcript DOES NOT exist

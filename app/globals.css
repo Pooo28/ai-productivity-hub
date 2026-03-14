@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --font-inter: var(--font-inter);
+  --font-outfit: var(--font-outfit);
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  --color-navy: #0B0B2A;
+  --color-blue: #405DFF;
+  --color-lavender: #D8D9F4;
+  --color-accent-coral: #FF6B6B;
+}
+
+:root {
+  --background: #D8D9F4;
+  --foreground: #0B0B2A;
+  --card: #ffffff;
+  --card-foreground: #0B0B2A;
+  --popover: #ffffff;
+  --popover-foreground: #0B0B2A;
+  --primary: #405DFF;
+  --primary-foreground: #fafafa;
+  --secondary: #0B0B2A;
+  --secondary-foreground: #405DFF;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #FF6B6B;
+  --accent-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #405DFF;
+  --radius: 2rem;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+.bg-lavender-glow {
+  background: radial-gradient(circle at 50% 50%, #E5E5FF 0%, #D8D9F4 100%);
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FF4D4D] via-[#A64DFF] to-[#405DFF];
+}
+
+.bento-card {
+  @apply rounded-[2.5rem] border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden backdrop-blur-md transition-all duration-700 hover:scale-[1.01] hover:shadow-[0_40px_80px_rgba(0,0,0,0.1)];
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
