@@ -28,11 +28,26 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: DO NOT REMOVE THIS. It refreshes the session if needed.
-  const { data: { user }, error } = await supabase.auth.getUser()
+  // Skip Supabase check for internal Next.js paths and static assets
+  const isInternalPath = request.nextUrl.pathname.startsWith('/_next') || 
+                         request.nextUrl.pathname.includes('/favicon.ico') ||
+                         request.nextUrl.pathname.includes('/not-found');
+
+  let user = null;
+  if (!isInternalPath) {
+    try {
+      // IMPORTANT: DO NOT REMOVE THIS. It refreshes the session if needed.
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      user = authUser;
+    } catch (e) {
+      console.error('Middleware: Supabase auth check failed', e);
+    }
+  }
   
   // Debug log
-  console.log(`Middleware tracing path: ${request.nextUrl.pathname}, user: ${user?.email || 'none'}`)
+  if (!isInternalPath) {
+    console.log(`Middleware tracing path: ${request.nextUrl.pathname}, user: ${user?.email || 'none'}`)
+  }
 
   // No protected routes for now to allow users to use features freely
   const protectedRoutes = ['/notes', '/youtube', '/jobs', '/schedule']

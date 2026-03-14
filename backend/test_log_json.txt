@@ -1,6 +1,0 @@
-
-Testing model with JSON: openrouter/free...
-SUCCESS JSON: openrouter/free responded in 14.04s
-Content: {
-  "status": "OK"
-}
