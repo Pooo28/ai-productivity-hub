@@ -121,6 +121,7 @@ export default function LoginPage() {
               onClick={handleGoogleLogin}
               disabled={loading}
               className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border border-gray-100 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+              suppressHydrationWarning
             >
               <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
               Continue with Google
@@ -147,6 +148,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-inter"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -163,6 +165,7 @@ export default function LoginPage() {
                     required
                     minLength={6}
                     className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-inter"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -171,6 +174,7 @@ export default function LoginPage() {
                 type="submit"
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-indigo-300 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none mt-2"
+                suppressHydrationWarning
               >
                 {loading ? (
                   <Loader2 className="h-6 w-6 animate-spin" />
@@ -190,6 +194,7 @@ export default function LoginPage() {
                   setError('');
                 }}
                 className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors hover:underline underline-offset-4"
+                suppressHydrationWarning
               >
                 {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
               </button>
