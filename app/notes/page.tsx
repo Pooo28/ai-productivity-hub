@@ -46,6 +46,9 @@ export default function NotesPage() {
         if (error) throw error;
         const noteList = data || [];
         setNotes(noteList);
+        
+        // Only auto-select the first note if we don't have an active one yet
+        // and we aren't explicitly in "new note" mode (represented by an empty list or first load)
         if (noteList.length > 0 && !activeNoteId) {
           const first = noteList[0];
           setActiveNoteId(first.id);
@@ -67,7 +70,7 @@ export default function NotesPage() {
     });
 
     return () => subscription.unsubscribe();
-  }, [activeNoteId]);
+  }, []); // Remove activeNoteId dependency to prevent re-runs on selection
 
   // Auto-save logic
   useEffect(() => {

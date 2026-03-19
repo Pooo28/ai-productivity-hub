@@ -14,16 +14,24 @@ def summarize_notes():
         return jsonify({"error": "Content is required"}), 400
 
     try:
+        import time
+        start_time = time.time()
+        
         api_key = os.getenv("OPENROUTER_API_KEY")
         if not api_key:
             return jsonify({"error": "OPENROUTER_API_KEY is missing in backend environment variables"}), 500
 
-        # Initialize OpenRouter client (OpenAI compatible)
+        # Aggressive truncation for speed (approx 6k chars / 1.5k tokens)
+        if len(content) > 6000:
+            content = content[:6000] + "... [Truncated for speed]"
+
+        # Initialize OpenRouter client
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
         )
 
+        # Using a stable free model alias
         response = client.chat.completions.create(
             model="openrouter/free", 
             messages=[
@@ -39,6 +47,9 @@ def summarize_notes():
         )
 
         summary = response.choices[0].message.content
+        duration = time.time() - start_time
+        print(f"DEBUG: Summarization took {duration:.2f} seconds")
+        
         return jsonify({"summary": summary}), 200
 
     except Exception as e:

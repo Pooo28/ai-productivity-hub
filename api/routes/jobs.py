@@ -15,14 +15,19 @@ def job_search():
         return jsonify({"error": "Role and location are required"}), 400
 
     try:
+        import time
+        start_time = time.time()
+        
         # Initialize Firecrawl
         app = FirecrawlApp(api_key=os.getenv("FIRECRAWL_API_KEY"))
         
         # Optimize query for jobs to get better results
-        # Combining role and location for a targeted search
         search_query = f"{role} jobs in {location}"
         print(f"DEBUG: Searching Firecrawl for: {search_query}")
         search_result = app.search(search_query)
+        
+        search_duration = time.time() - start_time
+        print(f"DEBUG: Firecrawl search took {search_duration:.2f} seconds")
         
         print(f"DEBUG: FULL SEARCH RESULT: {search_result}")
         print(f"DEBUG: Search result type: {type(search_result)}")
@@ -91,6 +96,7 @@ def job_search():
         user_skills = data.get('skills', 'Not provided')
 
         print(f"DEBUG: Requesting structured AI job data for {len(job_data)} jobs")
+        ai_start_time = time.time()
         try:
             response = client.chat.completions.create(
                 model="openrouter/free",
@@ -112,6 +118,9 @@ def job_search():
                 ],
                 response_format={ "type": "json_object" }
             )
+
+            ai_duration = time.time() - ai_start_time
+            print(f"DEBUG: AI Processing took {ai_duration:.2f} seconds")
 
             import json
             raw_content = response.choices[0].message.content

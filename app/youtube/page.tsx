@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Youtube, Search, Sparkles, Clock, List, ExternalLink, AlertCircle, Loader2, PlayCircle } from 'lucide-react';
+import { Youtube, Search, Sparkles, Clock, List, ExternalLink, AlertCircle, Loader2, PlayCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function YouTubePage() {
@@ -74,6 +74,22 @@ export default function YouTubePage() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteHistory = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const { error } = await supabase.from('videos').delete().eq('id', id);
+      if (error) throw error;
+      setHistory(prev => prev.filter(item => item.id !== id));
+      if (videoId === history.find(i => i.id === id)?.video_id) {
+        setVideoId('');
+        setSummary('');
+        setUrl('');
+      }
+    } catch (err: any) {
+      console.error("Delete failed:", err.message);
     }
   };
 
@@ -181,14 +197,22 @@ export default function YouTubePage() {
                       key={item.id} 
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log("Archive item clicked:", item.youtube_url);
                         setSummary(item.summary);
                         setVideoId(item.video_id);
                         setUrl(item.youtube_url);
                       }}
                       className="flex flex-col gap-2 p-4 bg-zinc-50 rounded-2xl hover:bg-zinc-100 border border-zinc-100 transition-all cursor-pointer group relative z-20"
                     >
-                      <span className="text-[10px] font-black text-blue truncate uppercase tracking-tighter italic pointer-events-none">{item.youtube_url}</span>
+                      <div className="flex items-center justify-between gap-2 overflow-hidden">
+                        <span className="text-[10px] font-black text-blue truncate uppercase tracking-tighter italic pointer-events-none">{item.youtube_url}</span>
+                        <button
+                          onClick={(e) => handleDeleteHistory(item.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-navy/20 hover:text-red-500 transition-all"
+                          title="Delete summary"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                       <span className="text-xs text-navy/60 line-clamp-2 font-medium leading-relaxed pointer-events-none">{item.summary.substring(0, 100)}...</span>
                     </div>
                  )) : (

@@ -83,6 +83,9 @@ def youtube_summary():
             api_key=api_key,
         )
 
+        import time
+        ai_start_time = time.time()
+        
         response = client.chat.completions.create(
             model="openrouter/free",
             messages=[
@@ -96,6 +99,9 @@ def youtube_summary():
                 }
             ]
         )
+
+        ai_duration = time.time() - ai_start_time
+        print(f"DEBUG: YouTube AI Processing took {ai_duration:.2f} seconds")
 
         summary = response.choices[0].message.content
         return jsonify({
