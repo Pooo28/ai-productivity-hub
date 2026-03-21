@@ -5,4 +5,4 @@ supabase==2.5.0
 openai==1.35.3
 pytest==8.2.2
 youtube-transcript-api
-firecrawl-py<1.0.0
+firecrawl-py>=4.19.0

@@ -24,41 +24,30 @@ def job_search():
         # Optimize query for jobs to get better results
         search_query = f"{role} jobs in {location}"
         print(f"DEBUG: Searching Firecrawl for: {search_query}")
-        search_result = app.search(search_query)
+        
+        # In v4.x SDK, timeout is a keyword argument. Default is 300000ms (300s).
+        # We'll set it to 60000ms (60s) to balance wait time and responsiveness.
+        try:
+            search_result = app.search(search_query, timeout=60000)
+            print(f"DEBUG: Firecrawl search completed successfully")
+        except TypeError:
+            # Fallback for unexpected keyword argument if SDK differs
+            print(f"DEBUG: Fallback: 'timeout' argument not accepted by this SDK version.")
+            search_result = app.search(search_query)
         
         search_duration = time.time() - start_time
         print(f"DEBUG: Firecrawl search took {search_duration:.2f} seconds")
-        
-        print(f"DEBUG: FULL SEARCH RESULT: {search_result}")
-        print(f"DEBUG: Search result type: {type(search_result)}")
 
-        # Handle SDK return type (object, dict, or list)
+        # Handle SDK return type (SearchData object in v4.x, or dict/list in older)
         job_data = []
-        if isinstance(search_result, list):
+        if hasattr(search_result, 'web') and search_result.web is not None:
+            job_data = search_result.web
+        elif isinstance(search_result, list):
             job_data = search_result
         elif isinstance(search_result, dict):
-            # If it's a dict, it might be the raw response with 'data' or already parsed
-            data_field = search_result.get('data', {})
-            if isinstance(data_field, dict):
-                job_data = data_field.get('web', [])
-            else:
-                job_data = search_result.get('web', [])
-        else:
-            # It's likely a SearchData object from v2 SDK
-            job_data = getattr(search_result, 'web', [])
+            job_data = search_result.get('data', {}).get('web', []) or search_result.get('web', [])
         
-        print(f"DEBUG: Extracted {len(job_data)} web results")
-
-        if not job_data:
-            # Fallback to other types if web is empty
-            if not isinstance(search_result, dict):
-                job_data = getattr(search_result, 'news', []) or getattr(search_result, 'data', [])
-            else:
-                job_data = search_result.get('news', []) or search_result.get('data', [])
-            print(f"DEBUG: Fallback check count: {len(job_data)}")
-
-        if not isinstance(job_data, list):
-            job_data = []
+        print(f"DEBUG: Extracted {len(job_data)} results from search")
 
         if not job_data:
             return jsonify({
