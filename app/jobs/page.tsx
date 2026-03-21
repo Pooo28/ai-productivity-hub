@@ -31,7 +31,9 @@ export default function JobSearchPage() {
     const searchLocation = location.trim() || 'Remote';
     
     try {
-      const resp = await fetch(`${process.env.NEXT_PUBLIC_FLASK_API_URL}/api/job-search`, {
+      const apiBase = process.env.NEXT_PUBLIC_FLASK_API_URL || 
+                      (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
+      const resp = await fetch(`${apiBase}/api/job-search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -68,7 +70,9 @@ export default function JobSearchPage() {
     setCurrentDraft('');
     setShowDraftModal(true);
     try {
-      const resp = await fetch(`${process.env.NEXT_PUBLIC_FLASK_API_URL}/api/draft-cover-letter`, {
+      const apiBase = process.env.NEXT_PUBLIC_FLASK_API_URL || 
+                      (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
+      const resp = await fetch(`${apiBase}/api/draft-cover-letter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ job_details: jobDetails, skills: '' }),

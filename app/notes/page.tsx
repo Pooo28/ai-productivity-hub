@@ -164,7 +164,8 @@ export default function NotesPage() {
     if (!content.trim()) return;
     setLoading(true);
     setError('');
-    const apiBase = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://127.0.0.1:5000';
+    const apiBase = process.env.NEXT_PUBLIC_FLASK_API_URL || 
+                    (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
     try {
       const resp = await fetch(`${apiBase}/api/summarize`, {
         method: 'POST',

@@ -49,7 +49,9 @@ export default function YouTubePage() {
     setVideoId('');
     
     try {
-      const resp = await fetch(`${process.env.NEXT_PUBLIC_FLASK_API_URL}/api/youtube-summary`, {
+      const apiBase = process.env.NEXT_PUBLIC_FLASK_API_URL || 
+                      (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
+      const resp = await fetch(`${apiBase}/api/youtube-summary`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),

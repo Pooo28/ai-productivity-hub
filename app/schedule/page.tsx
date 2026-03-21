@@ -154,7 +154,9 @@ export default function SchedulePage() {
     setError('');
     
     try {
-      const resp = await fetch(`${process.env.NEXT_PUBLIC_FLASK_API_URL}/api/schedule-suggest`, {
+      const apiBase = process.env.NEXT_PUBLIC_FLASK_API_URL || 
+                      (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
+      const resp = await fetch(`${apiBase}/api/schedule-suggest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tasks }),
