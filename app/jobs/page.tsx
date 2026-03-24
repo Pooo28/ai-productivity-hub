@@ -149,6 +149,7 @@ export default function JobSearchPage() {
               onChange={(e) => setRole(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="w-full pl-16 pr-6 py-6 rounded-2xl bg-zinc-50 border border-zinc-100 focus:bg-white focus:border-blue transition-all font-inter font-bold text-navy placeholder:text-navy/10 outline-none uppercase italic"
+              suppressHydrationWarning
             />
           </div>
           <div className="relative flex-grow w-full">
@@ -160,6 +161,7 @@ export default function JobSearchPage() {
               onChange={(e) => setLocation(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="w-full pl-16 pr-6 py-6 rounded-2xl bg-zinc-50 border border-zinc-100 focus:bg-white focus:border-blue transition-all font-inter font-bold text-navy placeholder:text-navy/10 outline-none uppercase italic"
+              suppressHydrationWarning
             />
           </div>
           <button

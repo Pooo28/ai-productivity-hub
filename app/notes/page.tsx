@@ -290,6 +290,7 @@ export default function NotesPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-0 py-2 bg-transparent border-b border-navy/10 focus:border-blue transition-all font-outfit font-black tracking-tighter text-4xl text-navy placeholder:text-navy/40 outline-none uppercase italic relative z-10"
+                suppressHydrationWarning
               />
               
               <div className="relative">
@@ -298,6 +299,7 @@ export default function NotesPage() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="w-full h-[500px] px-6 py-6 rounded-3xl bg-zinc-50 border border-zinc-100 focus:bg-white focus:border-blue transition-all resize-none font-inter text-xl text-navy/80 leading-relaxed font-medium placeholder:text-navy/10 outline-none"
+                  suppressHydrationWarning
                 />
                 <div className="absolute bottom-6 right-6 text-[10px] font-black tracking-widest uppercase italic">
                   <AnimatePresence>

@@ -234,6 +234,7 @@ export default function SchedulePage() {
                       value={newTask}
                       onChange={(e) => setNewTask(e.target.value)}
                       className="w-full pl-20 pr-6 py-6 rounded-3xl bg-zinc-50 border border-zinc-100 focus:bg-white focus:border-blue transition-all font-inter font-bold text-navy placeholder:text-navy/10 outline-none uppercase italic min-h-[140px] resize-none"
+                      suppressHydrationWarning
                     />
                   </div>
                   <div className="flex flex-col gap-4 xl:w-80">
@@ -244,6 +245,7 @@ export default function SchedulePage() {
                         value={newDeadline}
                         onChange={(e) => setNewDeadline(e.target.value)}
                         className="w-full h-full pl-16 pr-6 py-6 rounded-2xl bg-zinc-50 border border-zinc-100 focus:bg-white focus:border-blue transition-all font-inter font-bold text-navy text-sm outline-none uppercase italic"
+                        suppressHydrationWarning
                       />
                     </div>
                     <button
