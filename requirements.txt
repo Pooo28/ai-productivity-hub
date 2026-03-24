@@ -1,0 +1,7 @@
+flask
+flask-cors
+python-dotenv
+youtube-transcript-api
+openai
+requests
+firecrawl-py
