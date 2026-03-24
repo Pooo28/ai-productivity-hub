@@ -1,8 +1,8 @@
-Flask==3.0.3
-flask-cors==4.0.1
-python-dotenv==1.0.1
-supabase==2.5.0
-openai==1.35.3
-pytest==8.2.2
+flask
+flask-cors
+python-dotenv
 youtube-transcript-api
-firecrawl-py>=4.19.0
+openai
+requests
+firecrawl-py
+supabase
