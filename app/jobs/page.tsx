@@ -43,8 +43,16 @@ export default function JobSearchPage() {
         }),
       });
       
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Failed to search jobs');
+      const contentType = resp.headers.get("content-type");
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await resp.json();
+      } else {
+        const text = await resp.text();
+        throw new Error(`Server error (${resp.status}): ${text.substring(0, 100)}...`);
+      }
+      
+      if (!resp.ok) throw new Error(data?.error || 'Failed to search jobs');
       
       setSummary(data.summary);
       setJobs(data.jobs || []);
@@ -77,8 +85,17 @@ export default function JobSearchPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ job_details: jobDetails, skills: '' }),
       });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Failed to generate draft');
+      
+      const contentType = resp.headers.get("content-type");
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await resp.json();
+      } else {
+        const text = await resp.text();
+        throw new Error(`Server error (${resp.status}): ${text.substring(0, 100)}...`);
+      }
+      
+      if (!resp.ok) throw new Error(data?.error || 'Failed to generate draft');
       setCurrentDraft(data.draft);
     } catch (err: any) {
       setError(err.message);

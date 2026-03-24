@@ -162,8 +162,16 @@ export default function SchedulePage() {
         body: JSON.stringify({ tasks }),
       });
       
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Failed to get suggestions');
+      const contentType = resp.headers.get("content-type");
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await resp.json();
+      } else {
+        const text = await resp.text();
+        throw new Error(`Server error (${resp.status}): ${text.substring(0, 100)}...`);
+      }
+      
+      if (!resp.ok) throw new Error(data?.error || 'Failed to get suggestions');
       
       setSuggestion(data.suggestion);
     } catch (err: any) {

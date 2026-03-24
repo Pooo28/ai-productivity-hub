@@ -172,8 +172,17 @@ export default function NotesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content, title }),
       });
-      const data = await resp.json();
-      if (!resp.ok) throw Error(data.error || 'Failed to summarize');
+      
+      const contentType = resp.headers.get("content-type");
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await resp.json();
+      } else {
+        const text = await resp.text();
+        throw new Error(`Server error (${resp.status}): ${text.substring(0, 100)}...`);
+      }
+      
+      if (!resp.ok) throw new Error(data?.error || 'Failed to summarize');
       setSummary(data.summary);
     } catch (err: any) {
       setError(`${err.name}: ${err.message}`);

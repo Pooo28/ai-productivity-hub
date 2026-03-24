@@ -57,8 +57,16 @@ export default function YouTubePage() {
         body: JSON.stringify({ url }),
       });
       
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Failed to summarize video');
+      const contentType = resp.headers.get("content-type");
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await resp.json();
+      } else {
+        const text = await resp.text();
+        throw new Error(`Server error (${resp.status}): ${text.substring(0, 100)}...`);
+      }
+      
+      if (!resp.ok) throw new Error(data?.error || 'Failed to summarize video');
       
       setSummary(data.summary);
       setVideoId(data.video_id);
