@@ -6,6 +6,8 @@ const getSupabaseBrowserClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  console.log('Supabase Init:', { hasUrl: !!supabaseUrl, hasKey: !!supabaseKey });
+
   // Build-time safety: warn instead of crashing if env vars are missing
   if (!supabaseUrl || !supabaseKey) {
     if (typeof window === 'undefined') {
@@ -21,7 +23,31 @@ const getSupabaseBrowserClient = () => {
 
   const global = globalThis as any;
   if (!global.supabaseClient) {
-    global.supabaseClient = createBrowserClient(supabaseUrl, supabaseKey)
+    global.supabaseClient = createBrowserClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        // Custom lock implementation to handle "Lock broken by another request"
+        // which occurs frequently in Next.js 15 / HMR environments
+        ...(typeof window !== 'undefined' && 'locks' in navigator ? {
+          lock: {
+            acquireLock: async (name: string, callback: () => Promise<any>) => {
+              try {
+                const result = await navigator.locks.request(name, callback);
+                return result;
+              } catch (e: any) {
+                if (e.name === 'AbortError' || e.message?.includes('steal') || e.message?.includes('broken')) {
+                  console.warn('Supabase lock stolen, suppressing error.');
+                  return null;
+                }
+                throw e;
+              }
+            }
+          }
+        } : {})
+      }
+    })
   }
   return global.supabaseClient;
 }
