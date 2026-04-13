@@ -4,7 +4,7 @@ import os
 
 schedule_bp = Blueprint('schedule', __name__)
 
-@schedule_bp.route('/api/schedule-suggest', methods=['POST'])
+@schedule_bp.route('/schedule-suggest', methods=['POST'])
 def schedule_suggest():
     data = request.json
     tasks = data.get('tasks', [])

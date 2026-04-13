@@ -11,22 +11,8 @@ if api_dir not in sys.path:
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# We'll import blueprints carefully
-try:
-    from routes.summarize import summarize_bp
-    from routes.youtube import youtube_bp
-    from routes.jobs import jobs_bp
-    from routes.schedule import schedule_bp
-    
-    app.register_blueprint(summarize_bp)
-    app.register_blueprint(youtube_bp)
-    app.register_blueprint(jobs_bp)
-    app.register_blueprint(schedule_bp)
-    import_error = None
-except Exception as e:
-    import_error = str(e)
-
 @app.route('/api/health', methods=['GET'])
+@app.route('/health', methods=['GET'])
 def health_check():
     if import_error:
         return jsonify({
@@ -43,6 +29,28 @@ def health_check():
             "FIRECRAWL": bool(os.getenv("FIRECRAWL_API_KEY"))
         }
     }), 200
+
+# We'll import blueprints carefully
+try:
+    from routes.summarize import summarize_bp
+    from routes.youtube import youtube_bp
+    from routes.jobs import jobs_bp
+    from routes.schedule import schedule_bp
+    
+    # Register blueprints with both /api and root prefixes for maximum resilience
+    for bp in [summarize_bp, youtube_bp, jobs_bp, schedule_bp]:
+        # Local & Standard routing
+        app.register_blueprint(bp, url_prefix='/api')
+        # Vercel-specific routing fallback (if /api is stripped)
+        try:
+            app.register_blueprint(bp, name=f"{bp.name}_root")
+        except:
+            pass # Name might already exist
+            
+    import_error = None
+except Exception as e:
+    import_error = str(e)
+    print(f"IMPORT ERROR: {e}")
 
 # For local development
 if __name__ == '__main__':
