@@ -37,15 +37,9 @@ try:
     from routes.jobs import jobs_bp
     from routes.schedule import schedule_bp
     
-    # Register blueprints with both /api and root prefixes for maximum resilience
+    # Register blueprints simply. The routes already contain the /api prefix.
     for bp in [summarize_bp, youtube_bp, jobs_bp, schedule_bp]:
-        # Local & Standard routing
-        app.register_blueprint(bp, url_prefix='/api')
-        # Vercel-specific routing fallback (if /api is stripped)
-        try:
-            app.register_blueprint(bp, name=f"{bp.name}_root")
-        except:
-            pass # Name might already exist
+        app.register_blueprint(bp)
             
     import_error = None
 except Exception as e:
