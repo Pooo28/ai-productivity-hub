@@ -15,7 +15,6 @@ def extract_video_id(url):
     return match.group(1) if match else None
 
 @youtube_bp.route('/youtube-summary', methods=['POST'])
-@youtube_bp.route('/api/youtube-summary', methods=['POST'])
 def youtube_summary():
     data = request.json
     url = data.get('url')
@@ -88,7 +87,7 @@ def youtube_summary():
         ai_start_time = time.time()
         
         response = client.chat.completions.create(
-            model="openrouter/free",
+            model="google/gemini-2.0-flash-lite-preview-02-05:free",
             messages=[
                 {
                     "role": "system",

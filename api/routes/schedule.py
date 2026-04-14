@@ -5,7 +5,6 @@ import os
 schedule_bp = Blueprint('schedule', __name__)
 
 @schedule_bp.route('/schedule-suggest', methods=['POST'])
-@schedule_bp.route('/api/schedule-suggest', methods=['POST'])
 def schedule_suggest():
     data = request.json
     tasks = data.get('tasks', [])
@@ -24,7 +23,7 @@ def schedule_suggest():
         )
 
         response = client.chat.completions.create(
-            model="openrouter/free",
+            model="google/gemini-2.0-flash-lite-preview-02-05:free",
             messages=[
                 {
                     "role": "system",
