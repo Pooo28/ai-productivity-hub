@@ -88,7 +88,7 @@ def youtube_summary():
         ai_start_time = time.time()
         
         response = client.chat.completions.create(
-            model="google/gemini-2.0-flash-lite-preview-02-05:free",
+            model="google/gemini-2.0-flash-exp:free",
             messages=[
                 {
                     "role": "system",
