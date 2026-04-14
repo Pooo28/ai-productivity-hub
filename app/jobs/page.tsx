@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, Search, Sparkles, MapPin, Globe, ExternalLink, AlertCircle, Loader2, Building, Send, Plus, Filter, X, FileText, CheckCircle2, ChevronRight, DollarSign } from 'lucide-react';
+import { Briefcase, Search, Sparkles, MapPin, Globe, ExternalLink, AlertCircle, Loader2, Building, Send, Plus, Filter, X, FileText, CheckCircle2, ChevronRight, DollarSign, Clock } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { supabase } from '@/lib/supabase';
 
