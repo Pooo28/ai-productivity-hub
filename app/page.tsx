@@ -322,7 +322,7 @@ const SplitscreenHero = () => {
             </p>
 
             <Link
-              href="/signup"
+              href="/sign-up"
               className="group relative px-24 py-12 bg-[#020205] text-white rounded-full font-black text-3xl transition-all hover:scale-110 shadow-[0_20px_50px_rgba(2,2,5,0.15)] uppercase tracking-[0.25em] overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-[#FF9ECA] to-[#6B8AFF] opacity-0 group-hover:opacity-100 transition-opacity" />

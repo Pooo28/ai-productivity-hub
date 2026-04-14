@@ -30,7 +30,7 @@ export const JoinBar = () => {
         </div>
 
         <Link 
-          href="/signup"
+          href="/sign-up"
           className="relative z-10 px-10 py-3.5 bg-blue text-white rounded-full font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-blue/20 hover:scale-105 active:scale-95 transition-all"
         >
           Join
