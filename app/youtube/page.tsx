@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Youtube, Search, Sparkles, Clock, List, ExternalLink, AlertCircle, Loader2, PlayCircle, Trash2 } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
 import { supabase } from '@/lib/supabase';
 
 export default function YouTubePage() {
+  const { user, isLoaded } = useUser();
   const [url, setUrl] = useState('');
   const [summary, setSummary] = useState('');
   const [videoId, setVideoId] = useState('');
@@ -13,32 +15,23 @@ export default function YouTubePage() {
   const [error, setError] = useState('');
   const [history, setHistory] = useState<any[]>([]);
 
-  const [user, setUser] = useState<any>(null);
-
-  // 1. Fetch history and user on mount
+  // Fetch history when user is loaded
   useEffect(() => {
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
+    if (!isLoaded || !user) return;
 
-      if (session?.user) {
-        const { data, error } = await supabase
-          .from('videos')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(5);
+    const fetchHistory = async () => {
+      const { data, error } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
 
-        if (!error && data) setHistory(data);
-      }
+      if (!error && data) setHistory(data);
     };
-    init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    fetchHistory();
+  }, [user, isLoaded]);
 
   const handleSummarize = async () => {
     if (!url.trim()) return;

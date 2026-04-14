@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Brain, Youtube, Briefcase, Calendar, LayoutGrid, Clock, ArrowRight, Sparkles, Globe } from 'lucide-react';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { supabase } from '@/lib/supabase';
 import ScrollTimeline from '@/components/ScrollTimeline';
 import { JoinBar } from '@/components/JoinBar';
@@ -345,26 +346,10 @@ const SplitscreenHero = () => {
   );
 };
 
-export default function Home() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+const Home = () => {
+  const { user, isLoaded } = useUser();
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    };
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50">
         <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin" />
@@ -399,7 +384,7 @@ export default function Home() {
                 </h1>
                 <p className="text-2xl text-navy/60 font-bold max-w-2xl leading-tight tracking-tight italic flex items-center gap-4">
                   <LayoutGrid className="w-6 h-6 text-blue" />
-                  Welcome back, {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                  Welcome back, {user.fullName || user.username || user.primaryEmailAddress?.emailAddress.split('@')[0]}
                 </p>
               </div>
               
@@ -456,6 +441,7 @@ export default function Home() {
   }
 
   // PUBLIC LANDING VIEW (Not Logged In)
-  return <SplitscreenHero />;
+    return <SplitscreenHero />;
 }
 
+export default Home;

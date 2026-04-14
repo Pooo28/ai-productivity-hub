@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, FileText, Sparkles, Copy, Trash2, AlertCircle, Loader2, Plus } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
 import { supabase } from '@/lib/supabase';
 
 interface Note {
@@ -14,6 +15,7 @@ interface Note {
 }
 
 export default function NotesPage() {
+  const { user, isLoaded } = useUser();
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [content, setContent] = useState('');
@@ -24,31 +26,25 @@ export default function NotesPage() {
   const [error, setError] = useState('');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  const [user, setUser] = useState<any>(null);
-
-  // Fetch all notes and set up auth listener
+  // Fetch all notes
   useEffect(() => {
-    const init = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user || null);
-        
-        if (!session?.user) { 
-          setInitialLoading(false); 
-          return; 
-        }
+    if (!isLoaded || !user) {
+      if (isLoaded) setInitialLoading(false);
+      return;
+    }
 
+    const fetchNotes = async () => {
+      try {
         const { data, error } = await supabase
           .from('notes')
           .select('*')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
         const noteList = data || [];
         setNotes(noteList);
         
-        // Only auto-select the first note if we don't have an active one yet
-        // and we aren't explicitly in "new note" mode (represented by an empty list or first load)
         if (noteList.length > 0 && !activeNoteId) {
           const first = noteList[0];
           setActiveNoteId(first.id);
@@ -63,14 +59,8 @@ export default function NotesPage() {
       }
     };
 
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []); // Remove activeNoteId dependency to prevent re-runs on selection
+    fetchNotes();
+  }, [user, isLoaded]);
 
   // Auto-save logic
   useEffect(() => {
