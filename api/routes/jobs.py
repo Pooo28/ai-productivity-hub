@@ -70,13 +70,15 @@ def handle_job_search():
             
             context += f"Job {i+1}:\nTitle: {title}\nURL: {url}\nContent: {content}\n---\n"
 
-        # Initialize OpenRouter client
-        api_key = os.getenv("OPENROUTER_API_KEY")
+        # Initialize Groq client with fallback support
+        from config import GROQ_API_KEY as FALLBACK_KEY
+        api_key = os.getenv("GROQ_API_KEY") or FALLBACK_KEY
+        
         if not api_key:
-             return jsonify({"error": "OPENROUTER_API_KEY is missing in backend environment variables"}), 500
+             return jsonify({"error": "GROQ_API_KEY is missing in backend environment variables"}), 500
 
         client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
+            base_url="https://api.groq.com/openai/v1",
             api_key=api_key,
         )
 
@@ -87,7 +89,7 @@ def handle_job_search():
         ai_start_time = time.time()
         try:
             response = client.chat.completions.create(
-                model="openrouter/free",
+                model="llama-3.3-70b-versatile",
                 messages=[
                     {
                         "role": "system",
@@ -170,12 +172,15 @@ def handle_cover_letter_draft():
         return jsonify({"error": "Job details are required"}), 400
 
     try:
-        api_key = os.getenv("OPENROUTER_API_KEY")
+        # Initialize Groq client with fallback support
+        from config import GROQ_API_KEY as FALLBACK_KEY
+        api_key = os.getenv("GROQ_API_KEY") or FALLBACK_KEY
+        
         if not api_key:
-             return jsonify({"error": "OPENROUTER_API_KEY is missing in backend environment variables"}), 500
+             return jsonify({"error": "GROQ_API_KEY is missing in backend environment variables"}), 500
 
         client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
+            base_url="https://api.groq.com/openai/v1",
             api_key=api_key,
         )
 

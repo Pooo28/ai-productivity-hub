@@ -15,10 +15,13 @@ def handle_schedule_suggest():
         # Prepare tasks context
         task_list = "\n".join([f"- {task.get('title')} (Deadline: {task.get('deadline', 'N/A')})" for task in tasks])
 
-        # Initialize Groq client directly
+        # Initialize Groq client with fallback support
+        from config import GROQ_API_KEY as FALLBACK_KEY
+        api_key = os.getenv("GROQ_API_KEY") or FALLBACK_KEY
+        
         client = OpenAI(
             base_url="https://api.groq.com/openai/v1",
-            api_key=os.getenv("GROQ_API_KEY"),
+            api_key=api_key,
         )
 
         # Using Groq Llama 3.3 for extreme speed and accuracy

@@ -11,6 +11,10 @@ if api_dir not in sys.path:
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+# EMERGENCY FALLBACK KEY (To bypass Vercel setup issues)
+# Note: Ideally this should be in Vercel Secrets
+FALLBACK_GROQ_KEY = "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"
+
 @app.route('/api/health', methods=['GET'])
 @app.route('/health', methods=['GET'])
 def health_check():

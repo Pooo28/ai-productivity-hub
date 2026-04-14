@@ -26,66 +26,48 @@ def handle_youtube_summary():
         return jsonify({"error": "Invalid YouTube URL"}), 400
 
     try:
-        # Fetch transcript using youtube-transcript-api (latest versions don't use cookies properly anymore)
+        # Multistage transcript fetching with high-reliability fallbacks
         try:
+            # Stage 1: Official API (likely to fail on Vercel without cookies)
             try:
-                # New instanced API in v0.6.3+
                 api = YouTubeTranscriptApi()
-                transcript_list = api.list(video_id)
-                
-                try:
-                    transcript = transcript_list.find_manually_created_transcript(['en'])
-                except:
-                    try:
-                        transcript = transcript_list.find_generated_transcript(['en'])
-                    except:
-                        transcript = next(iter(transcript_list))
-                
-                data_list = transcript.fetch()
-                transcript_text = " ".join([
-                    item['text'] if isinstance(item, dict) else getattr(item, 'text', '') 
-                    for item in data_list
-                ])
-                print(f"Successfully fetched transcript using v0.6.3+ API for {video_id}")
-            except Exception as e:
-                print(f"Fallback to proxy due to local API failure: {str(e)}")
+                transcript_text = " ".join([t['text'] for t in api.get_transcript(video_id)])
+                print(f"Success Stage 1 for {video_id}")
+            except:
+                # Stage 2: Public Proxy (Robust against Captchas)
+                print(f"Stage 1 failed, triggering Stage 2 Proxy for {video_id}")
                 proxy_url = f"https://youtubetranscript.com/?server_vid={video_id}"
-                proxy_res = requests.get(proxy_url, timeout=15)
-                
+                proxy_res = requests.get(proxy_url, timeout=12)
                 if proxy_res.status_code == 200 and '<?xml' in proxy_res.text:
                     import xml.etree.ElementTree as ET
                     root = ET.fromstring(proxy_res.text)
                     transcript_text = " ".join([t.text for t in root.findall('text') if t.text])
-                    if not transcript_text:
-                        raise Exception("Empty transcript from proxy")
-                    print(f"Successfully fetched transcript using proxy for {video_id}")
                 else:
-                    raise Exception("Proxy returned invalid or empty response")
+                    raise Exception("Proxy failed")
 
         except Exception as transcript_err:
-            print(f"Transcript fetch completely failed for {video_id}: {str(transcript_err)}")
-            return jsonify({"error": "Failed to retrieve transcript. The video might be private, have no subtitles, or YouTube bot protection is active."}), 500
+            print(f"Transcript fetch failed for {video_id}: {str(transcript_err)}")
+            return jsonify({"error": "YouTube bot protection is active or subtitles are missing. Please try another video or try again in 5 minutes."}), 500
 
-        # Limit transcript length for the LLM
-
-        # Limit transcript length for the LLM (8,000 chars is plenty for a crisp summary)
-        if len(transcript_text) > 8000:
-            transcript_text = transcript_text[:8000] + "..."
-
-        # Initialize OpenRouter client
-        api_key = os.getenv("GROQ_API_KEY")
+        # AI Processing
+        from config import GROQ_API_KEY as FALLBACK_KEY
+        api_key = os.getenv("GROQ_API_KEY") or FALLBACK_KEY
+        
         if not api_key:
-            return jsonify({"error": "GROQ_API_KEY is missing in backend environment variables"}), 500
+            return jsonify({"error": "GROQ_API_KEY is missing"}), 500
 
         client = OpenAI(
             base_url="https://api.groq.com/openai/v1",
             api_key=api_key,
         )
+        # Limit transcript length for the LLM (8,000 chars is plenty for a crisp summary)
+        if len(transcript_text) > 8000:
+            transcript_text = transcript_text[:8000] + "..."
 
         import time
         ai_start_time = time.time()
         
-        # Using Groq Llama 3.3 for extreme speed and accuracy
+        # Using Groq Llama 3.3 for extreme speed and accuracy via the fallback-equipped client
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[

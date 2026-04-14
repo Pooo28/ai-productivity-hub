@@ -16,8 +16,10 @@ def handle_summarize():
         import time
         start_time = time.time()
         
-        # Initialize Groq client directly
-        api_key = os.getenv("GROQ_API_KEY")
+        # Initialize Groq client with fallback support
+        from config import GROQ_API_KEY as FALLBACK_KEY
+        api_key = os.getenv("GROQ_API_KEY") or FALLBACK_KEY
+        
         if not api_key:
             return jsonify({"error": "GROQ_API_KEY is missing in backend environment variables"}), 500
 
