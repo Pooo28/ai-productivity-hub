@@ -31,9 +31,9 @@ def handle_summarize():
         )
 
         # Using a stable free model alias
-        # Using GPT-4o-mini as requested
+        # Using Groq Llama 3.3 for extreme speed as requested
         response = client.chat.completions.create(
-            model="openai/gpt-4o-mini", 
+            model="groq/llama-3.3-70b-versatile", 
             messages=[
                 {
                     "role": "system",

@@ -85,8 +85,9 @@ def handle_youtube_summary():
         import time
         ai_start_time = time.time()
         
+        # Using Groq Llama 3.3 for extreme speed
         response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model="groq/llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",
