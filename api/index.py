@@ -25,13 +25,22 @@ def health_check():
             "error": import_error
         }), 500
     
+    # Check fallback status for reporting accuracy
+    try:
+        from config import GROQ_API_KEY as G_FALLBACK, FIRECRAWL_API_KEY as F_FALLBACK
+        has_groq = bool(os.getenv("GROQ_API_KEY") or G_FALLBACK)
+        has_firecrawl = bool(os.getenv("FIRECRAWL_API_KEY") or F_FALLBACK)
+    except:
+        has_groq = bool(os.getenv("GROQ_API_KEY") or FALLBACK_GROQ_KEY)
+        has_firecrawl = bool(os.getenv("FIRECRAWL_API_KEY"))
+
     return jsonify({
         "status": "ok", 
         "message": "Flask backend is fully operational",
         "env_check": {
-            "GROQ": bool(os.getenv("GROQ_API_KEY")),
+            "GROQ": has_groq,
             "OPENROUTER": bool(os.getenv("OPENROUTER_API_KEY")),
-            "FIRECRAWL": bool(os.getenv("FIRECRAWL_API_KEY"))
+            "FIRECRAWL": has_firecrawl
         }
     }), 200
 
