@@ -4,9 +4,7 @@ import os
 
 summarize_bp = Blueprint('summarize', __name__)
 
-@summarize_bp.route('/api/summarize', methods=['POST'])
-@summarize_bp.route('/summarize', methods=['POST'])
-def summarize_notes():
+def handle_summarize():
     data = request.json
     content = data.get('content')
     title = data.get('title', 'Untitled')

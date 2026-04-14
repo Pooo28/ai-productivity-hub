@@ -30,20 +30,33 @@ def health_check():
         }
     }), 200
 
-# We'll import blueprints carefully
+# Import handlers from route files
 try:
-    from routes.summarize import summarize_bp
-    from routes.youtube import youtube_bp
-    from routes.jobs import jobs_bp
-    from routes.schedule import schedule_bp
+    from routes.summarize import handle_summarize
+    from routes.youtube import handle_youtube_summary
+    from routes.jobs import handle_job_search, handle_cover_letter_draft
+    from routes.schedule import handle_schedule_suggest
     
-    # Register blueprints at root. 
-    # Paths will be explicitly defined in each route file (e.g., /api/summarize and /summarize)
-    # to ensure maximum compatibility with Vercel's internal routing.
-    app.register_blueprint(summarize_bp)
-    app.register_blueprint(youtube_bp)
-    app.register_blueprint(jobs_bp)
-    app.register_blueprint(schedule_bp)
+    # Register routes DIRECTLY on the app object for maximum stability on Vercel
+    @app.route('/api/summarize', methods=['POST'])
+    @app.route('/summarize', methods=['POST'])
+    def route_summarize(): return handle_summarize()
+
+    @app.route('/api/youtube-summary', methods=['POST'])
+    @app.route('/youtube-summary', methods=['POST'])
+    def route_youtube(): return handle_youtube_summary()
+
+    @app.route('/api/job-search', methods=['POST'])
+    @app.route('/job-search', methods=['POST'])
+    def route_jobs(): return handle_job_search()
+
+    @app.route('/api/draft-cover-letter', methods=['POST'])
+    @app.route('/draft-cover-letter', methods=['POST'])
+    def route_cover_letter(): return handle_cover_letter_draft()
+
+    @app.route('/api/schedule-suggest', methods=['POST'])
+    @app.route('/schedule-suggest', methods=['POST'])
+    def route_schedule(): return handle_schedule_suggest()
             
     import_error = None
 except Exception as e:
