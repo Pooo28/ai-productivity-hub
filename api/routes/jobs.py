@@ -5,8 +5,8 @@ import os
 
 jobs_bp = Blueprint('jobs', __name__)
 
-@jobs_bp.route('/job-search', methods=['POST'])
 @jobs_bp.route('/api/job-search', methods=['POST'])
+@jobs_bp.route('/job-search', methods=['POST'])
 def job_search():
     data = request.json
     role = data.get('role')
@@ -163,8 +163,8 @@ def job_search():
         print(f"DEBUG ERROR in Job search: {str(e)}")
         return jsonify({"error": f"Search failed: {str(e)}"}), 500
 
-@jobs_bp.route('/draft-cover-letter', methods=['POST'])
 @jobs_bp.route('/api/draft-cover-letter', methods=['POST'])
+@jobs_bp.route('/draft-cover-letter', methods=['POST'])
 def draft_cover_letter():
     data = request.json
     job_details = data.get('job_details')
@@ -184,7 +184,8 @@ def draft_cover_letter():
         )
 
         response = client.chat.completions.create(
-            model="google/gemini-2.0-flash-exp:free",
+        response = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
             messages=[
                 {
                     "role": "system",

@@ -37,12 +37,13 @@ try:
     from routes.jobs import jobs_bp
     from routes.schedule import schedule_bp
     
-    # Register blueprints with a central /api prefix.
-    # We remove the /api from individual route files for clean separation.
-    app.register_blueprint(summarize_bp, url_prefix='/api')
-    app.register_blueprint(youtube_bp, url_prefix='/api')
-    app.register_blueprint(jobs_bp, url_prefix='/api')
-    app.register_blueprint(schedule_bp, url_prefix='/api')
+    # Register blueprints at root. 
+    # Paths will be explicitly defined in each route file (e.g., /api/summarize and /summarize)
+    # to ensure maximum compatibility with Vercel's internal routing.
+    app.register_blueprint(summarize_bp)
+    app.register_blueprint(youtube_bp)
+    app.register_blueprint(jobs_bp)
+    app.register_blueprint(schedule_bp)
             
     import_error = None
 except Exception as e:
