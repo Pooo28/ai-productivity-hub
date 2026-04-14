@@ -16,24 +16,23 @@ def handle_summarize():
         import time
         start_time = time.time()
         
-        api_key = os.getenv("OPENROUTER_API_KEY")
+        # Initialize Groq client directly
+        api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
-            return jsonify({"error": "OPENROUTER_API_KEY is missing in backend environment variables"}), 500
+            return jsonify({"error": "GROQ_API_KEY is missing in backend environment variables"}), 500
 
         # Aggressive truncation for speed (approx 6k chars / 1.5k tokens)
         if len(content) > 6000:
             content = content[:6000] + "... [Truncated for speed]"
 
-        # Initialize OpenRouter client
         client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
+            base_url="https://api.groq.com/openai/v1",
             api_key=api_key,
         )
 
-        # Using a stable free model alias
-        # Using Meta Llama 3.3 for extreme speed and accuracy via OpenRouter
+        # Using Groq Llama 3.3 for extreme speed and accuracy
         response = client.chat.completions.create(
-            model="meta-llama/llama-3.3-70b-instruct", 
+            model="llama-3.3-70b-versatile", 
             messages=[
                 {
                     "role": "system",

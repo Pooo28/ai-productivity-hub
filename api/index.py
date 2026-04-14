@@ -25,6 +25,7 @@ def health_check():
         "status": "ok", 
         "message": "Flask backend is fully operational",
         "env_check": {
+            "GROQ": bool(os.getenv("GROQ_API_KEY")),
             "OPENROUTER": bool(os.getenv("OPENROUTER_API_KEY")),
             "FIRECRAWL": bool(os.getenv("FIRECRAWL_API_KEY"))
         }

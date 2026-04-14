@@ -15,15 +15,15 @@ def handle_schedule_suggest():
         # Prepare tasks context
         task_list = "\n".join([f"- {task.get('title')} (Deadline: {task.get('deadline', 'N/A')})" for task in tasks])
 
-        # Initialize OpenRouter client
+        # Initialize Groq client directly
         client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://api.groq.com/openai/v1",
+            api_key=os.getenv("GROQ_API_KEY"),
         )
 
-        # Using Meta Llama 3.3 for extreme speed and accuracy via OpenRouter
+        # Using Groq Llama 3.3 for extreme speed and accuracy
         response = client.chat.completions.create(
-            model="meta-llama/llama-3.3-70b-instruct",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",

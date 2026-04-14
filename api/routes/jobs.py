@@ -179,9 +179,9 @@ def handle_cover_letter_draft():
             api_key=api_key,
         )
 
-        # Using Meta Llama 3.3 for extreme speed and accuracy via OpenRouter
+        # Using Groq Llama 3.3 for extreme speed and accuracy
         response = client.chat.completions.create(
-            model="meta-llama/llama-3.3-70b-instruct",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",
