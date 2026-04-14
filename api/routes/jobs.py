@@ -16,9 +16,14 @@ def handle_job_search():
     try:
         import time
         start_time = time.time()
+        # Initialize Firecrawl with fallback support
+        from config import FIRECRAWL_API_KEY as FALLBACK_KEY
+        fc_key = os.getenv("FIRECRAWL_API_KEY") or FALLBACK_KEY
         
-        # Initialize Firecrawl
-        app = FirecrawlApp(api_key=os.getenv("FIRECRAWL_API_KEY"))
+        if not fc_key:
+            return jsonify({"error": "FIRECRAWL_API_KEY is missing"}), 500
+
+        app = FirecrawlApp(api_key=fc_key)
         
         # Optimize query for jobs to get better results
         search_query = f"{role} jobs in {location}"
