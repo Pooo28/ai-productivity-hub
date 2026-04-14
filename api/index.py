@@ -38,25 +38,36 @@ try:
     from routes.schedule import handle_schedule_suggest
     
     # Register routes DIRECTLY on the app object for maximum stability on Vercel
-    @app.route('/api/summarize', methods=['POST'])
-    @app.route('/summarize', methods=['POST'])
+    @app.route('/api/api/summarize', methods=['POST'], strict_slashes=False)
+    @app.route('/api/summarize', methods=['POST'], strict_slashes=False)
+    @app.route('/summarize', methods=['POST'], strict_slashes=False)
     def route_summarize(): return handle_summarize()
 
-    @app.route('/api/youtube-summary', methods=['POST'])
-    @app.route('/youtube-summary', methods=['POST'])
+    @app.route('/api/api/youtube-summary', methods=['POST'], strict_slashes=False)
+    @app.route('/api/youtube-summary', methods=['POST'], strict_slashes=False)
+    @app.route('/youtube-summary', methods=['POST'], strict_slashes=False)
     def route_youtube(): return handle_youtube_summary()
 
-    @app.route('/api/job-search', methods=['POST'])
-    @app.route('/job-search', methods=['POST'])
+    @app.route('/api/api/job-search', methods=['POST'], strict_slashes=False)
+    @app.route('/api/job-search', methods=['POST'], strict_slashes=False)
+    @app.route('/job-search', methods=['POST'], strict_slashes=False)
     def route_jobs(): return handle_job_search()
 
-    @app.route('/api/draft-cover-letter', methods=['POST'])
-    @app.route('/draft-cover-letter', methods=['POST'])
+    @app.route('/api/api/draft-cover-letter', methods=['POST'], strict_slashes=False)
+    @app.route('/api/draft-cover-letter', methods=['POST'], strict_slashes=False)
+    @app.route('/draft-cover-letter', methods=['POST'], strict_slashes=False)
     def route_cover_letter(): return handle_cover_letter_draft()
 
-    @app.route('/api/schedule-suggest', methods=['POST'])
-    @app.route('/schedule-suggest', methods=['POST'])
+    @app.route('/api/api/schedule-suggest', methods=['POST'], strict_slashes=False)
+    @app.route('/api/schedule-suggest', methods=['POST'], strict_slashes=False)
+    @app.route('/schedule-suggest', methods=['POST'], strict_slashes=False)
     def route_schedule(): return handle_schedule_suggest()
+            
+    # Universal fallback debugger catch-all
+    @app.route('/<path:dummy>', methods=['POST', 'GET', 'OPTIONS'])
+    def fallback(dummy):
+        return jsonify({"error": f"Route not found in Flask: {dummy}", "path": request.path}), 404
+
             
     import_error = None
 except Exception as e:
