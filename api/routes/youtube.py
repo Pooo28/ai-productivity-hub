@@ -86,7 +86,6 @@ def handle_youtube_summary():
         ai_start_time = time.time()
         
         response = client.chat.completions.create(
-        response = client.chat.completions.create(
             model="openai/gpt-4o-mini",
             messages=[
                 {

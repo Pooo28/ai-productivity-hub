@@ -180,7 +180,6 @@ def handle_cover_letter_draft():
         )
 
         response = client.chat.completions.create(
-        response = client.chat.completions.create(
             model="openai/gpt-4o-mini",
             messages=[
                 {
