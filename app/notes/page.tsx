@@ -174,6 +174,32 @@ export default function NotesPage() {
       
       if (!resp.ok) throw new Error(data?.error || 'Failed to summarize');
       setSummary(data.summary);
+      
+      // Immediate save after summarization for archival
+      if (user) {
+        const { data: savedData, error: saveErr } = await supabase
+          .from('notes')
+          .upsert({
+            id: activeNoteId || undefined,
+            user_id: user.id,
+            title: title || 'Untitled Note',
+            content: content,
+            summary: data.summary,
+          }, { onConflict: 'id' })
+          .select()
+          .single();
+          
+        if (!saveErr && savedData) {
+          setActiveNoteId(savedData.id);
+          setNotes(prev => {
+            const exists = prev.find(n => n.id === savedData.id);
+            if (exists) return prev.map(n => n.id === savedData.id ? savedData : n);
+            return [savedData, ...prev];
+          });
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 2000);
+        }
+      }
     } catch (err: any) {
       setError(`${err.name}: ${err.message}`);
     } finally {

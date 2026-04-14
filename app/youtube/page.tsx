@@ -25,7 +25,7 @@ export default function YouTubePage() {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(20);
 
       if (!error && data) setHistory(data);
     };
@@ -66,12 +66,16 @@ export default function YouTubePage() {
       
       // Save to Supabase if logged in
       if (user) {
-        await supabase.from('videos').insert({
+        const { data: saved, error: saveErr } = await supabase.from('videos').insert({
           user_id: user.id,
           youtube_url: url,
           video_id: data.video_id,
           summary: data.summary,
-        });
+        }).select().single();
+
+        if (!saveErr && saved) {
+          setHistory(prev => [saved, ...prev.slice(0, 19)]);
+        }
       }
     } catch (err: any) {
       setError(err.message);

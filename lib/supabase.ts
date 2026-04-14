@@ -28,24 +28,6 @@ const getSupabaseBrowserClient = () => {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        // Custom lock implementation to handle "Lock broken by another request"
-        // which occurs frequently in Next.js 15 / HMR environments
-        ...(typeof window !== 'undefined' && 'locks' in navigator ? {
-          lock: {
-            acquireLock: async (name: string, callback: () => Promise<any>) => {
-              try {
-                const result = await navigator.locks.request(name, callback);
-                return result;
-              } catch (e: any) {
-                if (e.name === 'AbortError' || e.message?.includes('steal') || e.message?.includes('broken')) {
-                  console.warn('Supabase lock stolen, suppressing error.');
-                  return null;
-                }
-                throw e;
-              }
-            }
-          }
-        } : {})
       }
     })
   }

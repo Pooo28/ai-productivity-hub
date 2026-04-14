@@ -18,6 +18,22 @@ export default function JobSearchPage() {
   const [currentDraft, setCurrentDraft] = useState('');
   const [showDraftModal, setShowDraftModal] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+
+  // Fetch history
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    const fetchHistory = async () => {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (!error && data) setHistory(data);
+    };
+    fetchHistory();
+  }, [user, isLoaded]);
 
   const handleSearch = async () => {
     if (!role.trim()) return;
@@ -59,11 +75,15 @@ export default function JobSearchPage() {
       
       // Save to Supabase if logged in via Clerk
       if (user) {
-        await supabase.from('jobs').insert({
+        const { data: saved, error: saveErr } = await supabase.from('jobs').insert({
           user_id: user.id,
           query: `${role} in ${searchLocation}`,
           results: data.summary,
-        });
+        }).select().single();
+        
+        if (!saveErr && saved) {
+          setHistory(prev => [saved, ...prev.slice(0, 4)]);
+        }
       }
     } catch (err: any) {
       setError(err.message);
@@ -308,6 +328,41 @@ export default function JobSearchPage() {
               </div>
            </div>
         </div>
+
+        {/* History Section - Minimal Tray */}
+        {history.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-20 pt-16 border-t border-navy/5"
+          >
+            <h3 className="text-xl font-black font-outfit text-navy/20 uppercase tracking-[0.3em] mb-10 flex items-center gap-4 italic">
+               <Clock className="w-5 h-5" />
+               Signal History
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {history.map((item) => (
+                <div 
+                  key={item.id}
+                  onClick={() => {
+                    const [hRole, hLoc] = (item.query || '').split(' in ');
+                    setRole(hRole || '');
+                    setLocation(hLoc || '');
+                    setSummary(item.results || '');
+                    setSearched(true);
+                  }}
+                  className="p-8 bg-white rounded-3xl border border-navy/5 shadow-xl hover:shadow-2xl transition-all cursor-pointer group relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-navy/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative z-10">
+                    <div className="text-[10px] font-black text-blue uppercase tracking-widest mb-2 italic">{item.query}</div>
+                    <div className="text-xs text-navy/40 line-clamp-2 font-bold leading-relaxed">{item.results}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Cover Letter Modal - Cinematic Glass */}
