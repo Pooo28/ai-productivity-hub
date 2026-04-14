@@ -27,27 +27,42 @@ def handle_youtube_summary():
 
     try:
         # Multistage transcript fetching with high-reliability fallbacks
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9"
+        }
+        
         try:
-            # Stage 1: Official API (likely to fail on Vercel without cookies)
+            # Stage 1: Official API (spoofed)
             try:
                 api = YouTubeTranscriptApi()
-                transcript_text = " ".join([t['text'] for t in api.get_transcript(video_id)])
+                transcript_text = " ".join([t['text'] for t in api.get_transcript(video_id, languages=['en', 'en-GB'])])
                 print(f"Success Stage 1 for {video_id}")
             except:
-                # Stage 2: Public Proxy (Robust against Captchas)
+                # Stage 2: Primary Proxy (spoofed)
                 print(f"Stage 1 failed, triggering Stage 2 Proxy for {video_id}")
                 proxy_url = f"https://youtubetranscript.com/?server_vid={video_id}"
-                proxy_res = requests.get(proxy_url, timeout=12)
+                proxy_res = requests.get(proxy_url, headers=headers, timeout=12)
+                
                 if proxy_res.status_code == 200 and '<?xml' in proxy_res.text:
                     import xml.etree.ElementTree as ET
                     root = ET.fromstring(proxy_res.text)
                     transcript_text = " ".join([t.text for t in root.findall('text') if t.text])
                 else:
-                    raise Exception("Proxy failed")
+                    # Stage 3: Emergency Fallback Proxy
+                    print(f"Stage 2 failed, triggering Stage 3 for {video_id}")
+                    # Using a secondary robust endpoint
+                    s3_url = f"https://www.youtube.com/api/timedtext?v={video_id}&lang=en"
+                    s3_res = requests.get(s3_url, headers=headers, timeout=10)
+                    if s3_res.status_code == 200 and s3_res.text:
+                         # Very basic XML check for S3
+                         transcript_text = re.sub('<[^<]+?>', '', s3_res.text)
+                    else:
+                        raise Exception("All transcript stages failed")
 
         except Exception as transcript_err:
             print(f"Transcript fetch failed for {video_id}: {str(transcript_err)}")
-            return jsonify({"error": "YouTube bot protection is active or subtitles are missing. Please try another video or try again in 5 minutes."}), 500
+            return jsonify({"error": "YouTube bot protection is still blocking the server. Please check if the video has 'Captions' enabled (CC button) or try a different video."}), 500
 
         # AI Processing
         from config import GROQ_API_KEY as FALLBACK_KEY
