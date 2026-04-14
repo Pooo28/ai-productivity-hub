@@ -15,6 +15,7 @@ def extract_video_id(url):
     return match.group(1) if match else None
 
 @youtube_bp.route('/youtube-summary', methods=['POST'])
+@youtube_bp.route('/api/youtube-summary', methods=['POST'])
 def youtube_summary():
     data = request.json
     url = data.get('url')

@@ -6,6 +6,7 @@ import os
 jobs_bp = Blueprint('jobs', __name__)
 
 @jobs_bp.route('/job-search', methods=['POST'])
+@jobs_bp.route('/api/job-search', methods=['POST'])
 def job_search():
     data = request.json
     role = data.get('role')
@@ -163,6 +164,7 @@ def job_search():
         return jsonify({"error": f"Search failed: {str(e)}"}), 500
 
 @jobs_bp.route('/draft-cover-letter', methods=['POST'])
+@jobs_bp.route('/api/draft-cover-letter', methods=['POST'])
 def draft_cover_letter():
     data = request.json
     job_details = data.get('job_details')
